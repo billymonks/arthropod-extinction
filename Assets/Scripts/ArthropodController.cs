@@ -114,6 +114,8 @@ public class ArthropodController : MonoBehaviour {
 
     private float spinDirection = 1;
 
+    public GameObject spinEffects;
+
     // Use this for initialization
     void Start () {
         hp = maxHp;
@@ -287,6 +289,11 @@ public class ArthropodController : MonoBehaviour {
                     dodgeCooldown = true;
                     cooldownTimer = dodgeCooldownLength;
                     state = PlayerState.Flight;
+
+                    foreach(ParticleSystem ps in spinEffects.GetComponentsInChildren<ParticleSystem>())
+                    {
+                        ps.Stop();
+                    }
                 }
 
                 rotation = new Vector3(((movement.y * -25f) + rotation.x * sAmt) / (sAmt + 1f), ((movement.x * 25f) + rotation.y * sAmt) / (sAmt + 1f), Mathf.Lerp(0, 360 * spinDirection, dodgeTimer/dodgeLength));
@@ -441,6 +448,11 @@ public class ArthropodController : MonoBehaviour {
             dodgeTimer = dodgeLength;
             state = PlayerState.Dodge;
 
+            foreach (ParticleSystem ps in spinEffects.GetComponentsInChildren<ParticleSystem>())
+            {
+                ps.Play();
+            }
+
             /*if (lockMovement == false)
             {
                 cameraLockRotation = camera.transform.localRotation;
@@ -502,10 +514,15 @@ public class ArthropodController : MonoBehaviour {
             if (rH.collider.CompareTag("SafeToTouch"))
                 return;
 
-            if ((state == PlayerState.Flight || state == PlayerState.Dodge) && rH.collider.CompareTag("Environment"))
+            if ((state == PlayerState.Flight || state == PlayerState.Dodge) && (rH.collider.CompareTag("Environment") || rH.collider.CompareTag("Water")))
             {
                 state = PlayerState.Flight;
                 Hit(1, transform.position, transform.forward);
+
+                foreach (ParticleSystem ps in spinEffects.GetComponentsInChildren<ParticleSystem>())
+                {
+                    ps.Stop();
+                }
             }
             else if (state == PlayerState.Flight && rH.collider.CompareTag("Enemy") && !rH.collider.gameObject.GetComponentInParent<Enemy>().isDead())
             {
